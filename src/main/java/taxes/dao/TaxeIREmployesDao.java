@@ -9,6 +9,8 @@ public interface TaxeIREmployesDao extends JpaRepository<TaxeIREmployes,Long> {
 
     TaxeIREmployes findByTaxeIRId(Long id);
 
+    TaxeIREmployes findByTaxeIRMoisAndTaxeIRAnneeAndSocieteIce(int mois, int annee, String ice);
+
 
 
     int deleteByTaxeIRMoisAndTaxeIRAnneeAndSocieteIce(int mois, int annee, String ice);

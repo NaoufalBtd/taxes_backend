@@ -1,13 +1,13 @@
 package taxes.service.impl;
 
 import jakarta.transaction.Transactional;
+import lombok.AllArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import taxes.bean.*;
 import taxes.dao.TaxeIRDao;
 import taxes.dao.TaxeIREmployesDao;
 import taxes.service.facade.TaxeIRFacade;
 import taxes.ws.dto.ResStatDto;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -15,24 +15,18 @@ import java.util.List;
 
 
 @Service
+@AllArgsConstructor
 public class TaxeIRService implements TaxeIRFacade {
 
-    @Autowired
-    private TaxeIRDao taxeIRDao;
+    private final TaxeIRDao taxeIRDao;
 
-    @Autowired
+    private final TaxeIREmployesService taxeIREmployesService;
+    private final SocieteService societeService;
 
-    private TaxeIREmployesService taxeIREmployesService;
-    @Autowired
-    private SocieteService societeService;
+    private final TauxTaxeIRService tauxTaxeIRService;
 
-    @Autowired
-    private TauxTaxeIRService tauxTaxeIRService;
-
-    @Autowired
-    private EmployeService employeService;
-    @Autowired
-    private TaxeIREmployesDao taxeIREmployesDao;
+    private final EmployeService employeService;
+    private final TaxeIREmployesDao taxeIREmployesDao;
 
 //    public List<TaxeIR> findBySocieteAndDateDeclaration(Societe societe, Date dateDeclaration) {
 //        return taxeIRDao.findBySocieteAndDateDeclaration(societe, dateDeclaration);
@@ -55,14 +49,24 @@ public class TaxeIRService implements TaxeIRFacade {
         return taxeIRDao.findAll(page).getContent();
     }
 
+    @Override
+    public int declareTaxeIR(TaxeIR taxeIR, List<Employe> employes) {
+        return save(taxeIR, employes);
+    }
+    @Override
+    public int declareTaxeIR(TaxeIR taxeIR) {
+        if(taxeIR.getSociete() == null || taxeIR.getSociete().getIce() == null || societeService.findByIce(taxeIR.getSociete().getIce()) == null) {
+            return -1;
+        }
+        Societe societe = societeService.findByIce(taxeIR.getSociete().getIce());
+        List<Employe> employes =  employeService.findBySocieteIce(societe.getIce());
+        return save(taxeIR, employes);
+    }
+
+    @Override
     @Transactional
-    public int save(TaxeIR taxeIR) {
-//        for (TaxeIREmployes taxeIREmployes : taxeIR.getTaxeIREmployes()) {
-//            Employe founededemployeIR = employeService.findByCin(taxeIREmployes.getEmploye().getCin());
-//            if (founededemployeIR != null) {
-//                return -1;
-//            }
-//        }
+    public int save(TaxeIR taxeIR, List<Employe> employes) {
+
         if (taxeIR.getSociete() == null || taxeIR.getSociete().getIce() == null || societeService.findByIce(taxeIR.getSociete().getIce()) == null) {
             return -2;
         } else if (taxeIRDao.findByMoisAndAnneeAndSocieteIce(taxeIR.getMois(), taxeIR.getAnnee(), taxeIR.getSociete().getIce()) != null) {
@@ -83,12 +87,12 @@ public class TaxeIRService implements TaxeIRFacade {
         (taxeIR.getSalaireNet() < 0 || taxeIR.getSalaireBrute() < 0) {
             return -6;
         } else {
-            Societe societe = societeService.findByIce(taxeIR.getSociete().getIce());
+            Societe societe = taxeIR.getSociete();
             double totalNet = 0;
             double totalBrut = 0;
             taxeIR.setSociete(societe);
             taxeIRDao.save(taxeIR);
-            List<Employe> employes = employeService.findBySocieteIce(societe.getIce());
+
             for (Employe emp : employes) {
                 TauxTaxeIR tauxTaxeIR = tauxTaxeIRService.findBySalaireMaxAndSalaireMin(emp.getSalaire());
                 if (tauxTaxeIR == null) {
@@ -108,7 +112,7 @@ public class TaxeIRService implements TaxeIRFacade {
 
                 totalNet += salaireNet;
                 totalBrut += salaireBrute;
-                taxeIREmployesDao.save(taxeIREmployes);
+                taxeIREmployesService.save(taxeIREmployes);
             }
 
             taxeIR.setSalaireBrute(totalBrut);
@@ -136,6 +140,7 @@ public class TaxeIRService implements TaxeIRFacade {
         taxeIRDao.save(existingTaxeIR);
         return 1;
     }
+
 
     public List<ResStatDto> calculStatic(int annee) {
 

@@ -258,7 +258,7 @@ public class DataLoader implements CommandLineRunner {
                     taxeIR.setMois(i);
                     taxeIR.setDateDeclaration(Timestamp.valueOf(LocalDate.of(Integer.parseInt(year), i, 1).atStartOfDay()));
                     taxeIR.setSociete(societe);
-                    taxeIRService.save(taxeIR);
+                    taxeIRService.declareTaxeIR(taxeIR);
                 }
             }
         }

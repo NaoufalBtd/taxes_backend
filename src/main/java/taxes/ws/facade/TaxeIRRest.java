@@ -3,6 +3,7 @@ package taxes.ws.facade;
 import jakarta.websocket.server.PathParam;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import taxes.bean.Employe;
 import taxes.bean.Societe;
 import taxes.bean.TaxeIR;
 import taxes.service.facade.TaxeIRFacade;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RequestMapping("/api/v1/TaxeIR")
@@ -52,8 +54,11 @@ public class TaxeIRRest {
     @PostMapping("/")
     public int save(@RequestBody TaxeIRDto taxeIRDto) {
         TaxeIR taxeIR =taxeIRConverter.toItem(taxeIRDto);
-
-        return taxeIRFacade.save(taxeIR);
+        Optional<List<Employe>> employes = Optional.ofNullable(taxeIRDto.getEmployes());
+        if(employes.isPresent())
+            return taxeIRFacade.declareTaxeIR(taxeIR, employes.get());
+        else
+            return taxeIRFacade.declareTaxeIR(taxeIR);
     }
 
     @GetMapping("/annee/{annee}")
@@ -65,7 +70,6 @@ public class TaxeIRRest {
     @PutMapping("/updateTaxeIR/taxeIR/{taxeIR}")
     public int updateTaxeIR(@RequestBody TaxeIRDto taxeIRDto) {
         TaxeIR taxeIR =taxeIRConverter.toItem(taxeIRDto);
-
         return taxeIRFacade.updateTaxeIR(taxeIR);
     }
 
