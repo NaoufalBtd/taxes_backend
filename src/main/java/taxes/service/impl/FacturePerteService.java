@@ -1,5 +1,6 @@
 package taxes.service.impl;
 
+import org.springframework.data.domain.PageRequest;
 import taxes.bean.FacturePerte;
 import taxes.bean.TaxeIS;
 import taxes.dao.FacturePerteDao;
@@ -20,6 +21,16 @@ public class FacturePerteService implements FacturePerteFacade {
 
     public List<FacturePerte> findBySocieteIceAndDateFactureBetween(String ice, Date startDate, Date endDate) {
         return  facturePerteDao.findBySocieteIceAndDateFactureBetween(ice, startDate, endDate);
+    }
+
+    @Override
+    public List<FacturePerte> findBySociete(String ice, PageRequest pageRequest) {
+        return facturePerteDao.findBySocieteIce(ice, pageRequest);
+    }
+
+    @Override
+    public List<FacturePerte> findBySocieteAndDate(String ice, Date startDate, Date endDate, PageRequest pageRequest) {
+        return facturePerteDao.findBySocieteIceAndDateFactureBetween(ice, startDate, endDate, pageRequest);
     }
 
     public int save(FacturePerte facturePerte) {

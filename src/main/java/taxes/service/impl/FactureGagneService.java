@@ -1,16 +1,16 @@
 package taxes.service.impl;
 
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.PageRequest;
 import taxes.bean.FactureGagne;
-import taxes.bean.TaxeIS;
 import taxes.dao.FactureGagneDao;
 import taxes.service.facade.FactureGagneFacade;
-import org.aspectj.apache.bcel.classfile.Code;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class FactureGagneService implements FactureGagneFacade {
@@ -20,9 +20,13 @@ public class FactureGagneService implements FactureGagneFacade {
     SocieteService societeService;
 //    @Autowired
 //    TaxeIsService taxeIsService;
+    @Override
+public List<FactureGagne> findBySocieteIceAndDateFactureBetween(String ice, Date startDate, Date endDate) {
+    return factureGagneDao.findBySocieteIceAndDateFactureBetween(ice, startDate, endDate);
+}
 
-    public List<FactureGagne> findBySocieteIceAndDateFactureBetween(String ice, Date startDate, Date endDate) {
-        return factureGagneDao.findBySocieteIceAndDateFactureBetween(ice, startDate, endDate);
+    public List<FactureGagne> findBySocieteIceAndDateFactureBetween(String ice, Date startDate, Date endDate, PageRequest pageRequest) {
+        return factureGagneDao.findBySocieteIceAndDateFactureBetween(ice, startDate, endDate, pageRequest);
     }
 
     @Transactional
@@ -43,8 +47,20 @@ public class FactureGagneService implements FactureGagneFacade {
         }
     }
 
+    @Override
+    public List<FactureGagne> findBySociete(String ice, PageRequest pageRequest) {
+        return factureGagneDao.findBySocieteIce(ice, pageRequest);
+    }
 
-
+    @Override
+    public List<FactureGagne> findBySocieteAndDate(String ice, Date startDate, Date endDate, PageRequest pageRequest) {
+        return factureGagneDao.findBySocieteIceAndDateFactureBetween(ice, startDate, endDate, pageRequest);
+    }
+    @Override
+    public List<Object[]> getLastSixMonthsIncomeInvoicesSumPerMonth(String ice) {
+        Date sixMonthsAgo = new Date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(30 * 6));
+        return factureGagneDao.getSumTTCByMonthForLastSixMonths(sixMonthsAgo, ice);
+    }
 
 
 

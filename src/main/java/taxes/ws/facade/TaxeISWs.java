@@ -1,7 +1,9 @@
 package taxes.ws.facade;
 
 
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import taxes.bean.*;
+import taxes.service.facade.IsItemFacade;
 import taxes.service.facade.TaxeIsFacade;
 import taxes.service.impl.TaxeIsService;
 import taxes.ws.converter.ISItemConverter;
@@ -20,6 +22,8 @@ public class TaxeISWs {
     private TaxeIsService taxeIsService;
     @Autowired
     private TaxeIsFacade taxeIsFacade;
+    @Autowired
+    private IsItemFacade isItemFacade;
     @Autowired
     private TaxeISConverter taxeISConverter;
     @Autowired
@@ -54,9 +58,9 @@ public class TaxeISWs {
         return taxeIsFacade.deleteByAnneeAndTrimestre(trimestre, annee);
     }
     @PostMapping("/")
-    public int save(@RequestBody ISItemDto iSItemDto) {
+    public int save(@RequestBody ISItemDto iSItemDto, @AuthenticationPrincipal User user) {
         ISItem sav = isItemConverter.toItem(iSItemDto);
-        return taxeIsFacade.save(sav);
+        return isItemFacade.save(sav, user.getSociete());
     }
     @PutMapping("/")
     public int updateTaxeIS(@RequestBody TaxeISDto taxeISDto) {

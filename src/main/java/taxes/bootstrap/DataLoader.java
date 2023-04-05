@@ -14,6 +14,7 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 import static java.lang.Double.POSITIVE_INFINITY;
 
@@ -33,6 +34,10 @@ public class DataLoader implements CommandLineRunner {
     private TauxTaxeIRDao tauxTaxeIRDao;
     @Autowired
     private UserService userService;
+    @Autowired
+    private FactureGagneDao factureGagneDao;
+    @Autowired
+    private FacturePerteDao facturePerteDao;
 
 
 
@@ -247,8 +252,6 @@ public class DataLoader implements CommandLineRunner {
         tauxTaxeIr4.setSalaireMax(100000000.00);
         tauxTaxeIRDao.save(tauxTaxeIr4);
 
-        // Save TaxeIr
-
         //save taxeIr for year 2022 and all months
         String[] years = {"2020","2021", "2022"};
             for (String year : years) {
@@ -261,5 +264,28 @@ public class DataLoader implements CommandLineRunner {
                     taxeIRService.declareTaxeIR(taxeIR);
                 }
             }
+        //        Save Income invoices
+        for (int i = 0; i < 40; i++) {
+            FactureGagne facture = new FactureGagne();
+            facture.setCode("INV-" + String.format("%03d", i+1));
+            facture.setMontantHT(1000.00 * (i+1));
+            facture.setTva(20.0);
+            facture.setMontantTTC(facture.getMontantHT() * (1 + facture.getTva() / 100));
+            facture.setDateFacture(new Date(new Date().getTime() - TimeUnit.DAYS.toMillis((i+1) * 30)));
+            facture.setSociete(societe);
+            factureGagneDao.save(facture);
         }
+        for (int i = 0; i < 40; i++) {
+            FacturePerte facture = new FacturePerte();
+            facture.setCode("INV-" + String.format("%03d", i+1));
+            facture.setMontantHT(1000.00 * (i+1));
+            facture.setTva(20.0);
+            facture.setMontantTTC(facture.getMontantHT() * (1 + facture.getTva() / 100));
+            facture.setDateFacture(new Date(new Date().getTime() - TimeUnit.DAYS.toMillis((i+1) * 30)));
+            facture.setSociete(societe);
+            facturePerteDao.save(facture);
+        }
+    }
+
+
 }
