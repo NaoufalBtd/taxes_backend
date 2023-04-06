@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 @Entity
@@ -30,5 +31,7 @@ public class TaxeIS {
 
     @ManyToOne
     private TauxTaxeIS tauxTaxeIS;
+    @OneToMany(mappedBy = "taxeIS")
+    private List<NotificationISDetail> notificationISDetail;
 
 }

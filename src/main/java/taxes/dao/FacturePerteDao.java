@@ -21,10 +21,10 @@ public interface FacturePerteDao extends JpaRepository<FacturePerte, Long> {
     List<FacturePerte> findBySocieteIceAndDateFactureBetween(String ice, Date debut, Date fin, PageRequest pageRequest);
 
     @Query("SELECT MONTH(f.dateFacture) as month, YEAR(f.dateFacture) as year, SUM(f.montantTTC) as sumTTC "
-            + "FROM FactureGagne f "
-            + "WHERE f.dateFacture >= :sixMonthsAgo "
+            + "FROM FacturePerte f "
+            + "WHERE f.dateFacture >= :months AND f.societe.ice = :ice "
             + "GROUP BY YEAR(f.dateFacture), MONTH(f.dateFacture)")
-    public List<Object[]> getSumTTCByMonthForLastSixMonths(@Param("sixMonthsAgo") Date sixMonthsAgo);
+    public List<Object[]> getSumTTCByMonth(@Param("months") Date months, @Param("ice") String ice);
     List<FacturePerte> findBySocieteIce(String ice, PageRequest pageRequest);
 
 

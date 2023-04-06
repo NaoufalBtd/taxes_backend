@@ -3,10 +3,7 @@ package taxes.ws.facade;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import taxes.bean.FactureGagne;
-import taxes.bean.ISItem;
-import taxes.bean.TaxeIS;
-import taxes.bean.User;
+import taxes.bean.*;
 import taxes.service.facade.FactureGagneFacade;
 import taxes.ws.converter.FactureGagneConverter;
 import taxes.ws.dto.FactureGagneDto;
@@ -17,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -48,9 +46,15 @@ public class FactureGagneRest {
         return factureGagneFacade.save(save);
     }
 
-    @GetMapping("/sum")
-    public List<Object[]> sum(@AuthenticationPrincipal User user) {
-        return factureGagneFacade.getLastSixMonthsIncomeInvoicesSumPerMonth(user.getSociete().getIce());
+    @GetMapping("/statistics")
+    public List<SumInvoicesByMonth> sum(@AuthenticationPrincipal User user, @RequestParam(name = "monthsAgo", required = false, defaultValue = "6") Long monthsAgo ) {
+        return factureGagneFacade.getIncomeInvoicesSumByMonth(user.getSociete().getIce(), monthsAgo).stream().map(objects -> {
+            SumInvoicesByMonth sumInvoicesByMonth = new SumInvoicesByMonth();
+            sumInvoicesByMonth.setMonth((int) objects[0]);
+            sumInvoicesByMonth.setYear((int) objects[1]);
+            sumInvoicesByMonth.setSumTTC((double) objects[2]);
+            return sumInvoicesByMonth;
+        }).collect(Collectors.toList());
     }
 
 

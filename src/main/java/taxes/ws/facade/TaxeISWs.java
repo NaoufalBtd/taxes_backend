@@ -68,10 +68,11 @@ public class TaxeISWs {
         return taxeIsFacade.updateTaxeIS(update);
     }
 
-    public List<TaxeISDto> findAll() {
-        List<TaxeIS> all = taxeIsFacade.findAll();
-        return  taxeISConverter.toDto(all);
+    @PostMapping("/add")
+    public int saveTaxesISByTrimester(@RequestBody TaxeISDto taxeISDto) {
+        return taxeIsFacade.saveTaxesISByTrimester(taxeISDto.getTrimestre(), taxeISDto.getAnnee());
     }
+
 
 @GetMapping("/annee/{annee}")
     public List<ResStatiqueISDto> calcStatique(int annee) {

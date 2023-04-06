@@ -16,6 +16,5 @@ public interface FacturePerteFacade {
     public int save(FacturePerte facturePerte);
 
 
-
-
+    List<Object[]> getIncomeInvoicesSumByMonth(String ice, long month);
 }

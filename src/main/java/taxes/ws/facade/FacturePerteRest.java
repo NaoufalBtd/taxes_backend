@@ -5,6 +5,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import taxes.bean.FacturePerte;
 import taxes.bean.FacturePerte;
+import taxes.bean.SumInvoicesByMonth;
 import taxes.bean.User;
 import taxes.service.facade.FacturePerteFacade;
 import taxes.ws.converter.FacturePerteConverter;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/Factureperte")
@@ -43,4 +45,16 @@ public class FacturePerteRest {
         return facturePerteFacade.save(save);
     }
 
+    @GetMapping("/statistics")
+    public List<SumInvoicesByMonth> sum(@AuthenticationPrincipal User user, @RequestParam(name = "monthsAgo", required = false, defaultValue = "6") Long monthsAgo ) {
+        return facturePerteFacade.getIncomeInvoicesSumByMonth(user.getSociete().getIce(), monthsAgo).stream().map(objects -> {
+            SumInvoicesByMonth sumInvoicesByMonth = new SumInvoicesByMonth();
+            sumInvoicesByMonth.setMonth((int) objects[0]);
+            sumInvoicesByMonth.setYear((int) objects[1]);
+            sumInvoicesByMonth.setSumTTC((double) objects[2]);
+            return sumInvoicesByMonth;
+        }).collect(Collectors.toList());
+
+
+    }
 }

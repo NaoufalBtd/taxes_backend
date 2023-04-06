@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class FacturePerteService implements FacturePerteFacade {
@@ -54,6 +55,11 @@ public class FacturePerteService implements FacturePerteFacade {
         }
     }
 
+    @Override
+    public List<Object[]> getIncomeInvoicesSumByMonth(String ice, long month) {
+        Date sixMonthsAgo = new Date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(30 * month));
+        return facturePerteDao.getSumTTCByMonth(sixMonthsAgo, ice);
+    }
 
 
 

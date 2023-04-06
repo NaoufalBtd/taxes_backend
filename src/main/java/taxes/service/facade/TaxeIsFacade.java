@@ -25,7 +25,9 @@ public interface TaxeIsFacade {
      public int deleteByAnneeAndTrimestreAndSocieteIce(int annee, int trimestre, String ice);
 
 
-    int save(ISItem isItem, Societe societe);
+    int save(TaxeIS taxeIS, Societe societe);
+
+    int saveTaxesISByTrimester(int annee, int trimester);
 
     int save(TaxeIS taxeIS);
 

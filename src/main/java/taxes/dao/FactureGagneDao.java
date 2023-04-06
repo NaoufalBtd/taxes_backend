@@ -18,11 +18,16 @@ public interface FactureGagneDao extends JpaRepository<FactureGagne,Long> {
     List<FactureGagne> findBySocieteIceAndDateFactureBetween(String ice, Date debut, Date fin);
     
     List<FactureGagne> findBySocieteIceAndDateFactureBetween(String ice, Date debut, Date fin, PageRequest pageRequest);
+//    @Query("SELECT MONTH(f.dateFacture) as month, YEAR(f.dateFacture) as year, SUM(f.montantTTC) as sumTTC "
+//            + "FROM FactureGagne f "
+//            + "WHERE f.dateFacture >= :sixMonthsAgo AND f.societe.ice = :ice "
+//            + "GROUP BY YEAR(f.dateFacture), MONTH(f.dateFacture)")
+//    public List<Object[]> getSumTTCByMonthForLastSixMonths(@Param("sixMonthsAgo") Date sixMonthsAgo, @Param("ice") String ice);
+
     @Query("SELECT MONTH(f.dateFacture) as month, YEAR(f.dateFacture) as year, SUM(f.montantTTC) as sumTTC "
             + "FROM FactureGagne f "
-            + "WHERE f.dateFacture >= :sixMonthsAgo AND f.societe.ice = :ice "
+            + "WHERE f.dateFacture >= :months AND f.societe.ice = :ice "
             + "GROUP BY YEAR(f.dateFacture), MONTH(f.dateFacture)")
-    public List<Object[]> getSumTTCByMonthForLastSixMonths(@Param("sixMonthsAgo") Date sixMonthsAgo, @Param("ice") String ice);
-
+    public List<Object[]> getSumTTCByMonth(@Param("months") Date months, @Param("ice") String ice);
     List<FactureGagne> findBySocieteIce(String ice, PageRequest pageRequest);
 }

@@ -18,9 +18,10 @@ public interface FactureGagneFacade {
     public  int save(FactureGagne factureGagne);
     
 
-    List<Object[]> getLastSixMonthsIncomeInvoicesSumPerMonth(String ice);
 
     List<FactureGagne> findBySociete(String ice, PageRequest pageRequest);
 
     List<FactureGagne> findBySocieteAndDate(String ice, Date startDate, Date endDate, PageRequest pageRequest);
+
+    List<Object[]> getIncomeInvoicesSumByMonth(String ice, long month);
 }

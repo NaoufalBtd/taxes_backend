@@ -56,10 +56,15 @@ public List<FactureGagne> findBySocieteIceAndDateFactureBetween(String ice, Date
     public List<FactureGagne> findBySocieteAndDate(String ice, Date startDate, Date endDate, PageRequest pageRequest) {
         return factureGagneDao.findBySocieteIceAndDateFactureBetween(ice, startDate, endDate, pageRequest);
     }
-    @Override
-    public List<Object[]> getLastSixMonthsIncomeInvoicesSumPerMonth(String ice) {
-        Date sixMonthsAgo = new Date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(30 * 6));
-        return factureGagneDao.getSumTTCByMonthForLastSixMonths(sixMonthsAgo, ice);
+//    @Override
+//    public List<Object[]> getLastSixMonthsIncomeInvoicesSumPerMonth(String ice) {
+//        Date sixMonthsAgo = new Date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(30 * 6));
+//        return factureGagneDao.getSumTTCByMonthForLastSixMonths(sixMonthsAgo, ice);
+//    }
+@Override
+    public List<Object[]> getIncomeInvoicesSumByMonth(String ice, long month) {
+        Date sixMonthsAgo = new Date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(30 * month));
+        return factureGagneDao.getSumTTCByMonth(sixMonthsAgo, ice);
     }
 
 

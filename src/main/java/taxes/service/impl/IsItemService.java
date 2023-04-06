@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import taxes.bean.*;
 import taxes.dao.FacturePerteDao;
+import taxes.dao.ISItemDao;
 import taxes.dao.TaxeISDao;
 import taxes.service.facade.IsItemFacade;
 import taxes.utils.DateGenerator;
@@ -23,6 +24,7 @@ public class IsItemService implements IsItemFacade {
     private final FacturePerteService facturePerteService;
     private final FactureGagneService factureGagneService;
     private final TauxTaxeIsService tauxTaxeIsService;
+    private final ISItemDao isItemDao;
 
     @Override
     public int save(ISItem isItem, Societe societe) {
@@ -39,6 +41,7 @@ public class IsItemService implements IsItemFacade {
         } else {
             double totalGain = 0;
             double totalCharge = 0;
+            double montantIS = 0;
 
 
             //Get Date range By Annee and Trimestre
@@ -65,12 +68,13 @@ public class IsItemService implements IsItemFacade {
             taxeIS.setChiffreAffaire(totalGain);
             taxeIS.setCharge(totalCharge);
 
-            taxeIS.setResultatAvantImpot(taxeIS.getChiffreAffaire() - taxeIS.getCharge());
-            TauxTaxeIS tauxTaxeIS = tauxTaxeIsService.tauxTaxeIsDao.findByResultatAvantImpot(taxeIS.getResultatAvantImpot());
+            double resultatAvantImpot = taxeIS.getChiffreAffaire() - taxeIS.getCharge();
+            taxeIS.setResultatAvantImpot(resultatAvantImpot);
+            TauxTaxeIS tauxTaxeIS = tauxTaxeIsService.findByResultatAvantImpot(taxeIS.getResultatAvantImpot());
             taxeIS.setTauxTaxeIS(tauxTaxeIS);
-           taxeIS.setMontantIs(tauxTaxeIS.getPourcentage() * taxeIS.getResultatAvantImpot());
-            taxeIS.setResultatApresImpot(taxeIS.getResultatAvantImpot() - taxeIS.getMontantIs());
-
+            double resultatApresImpot = resultatAvantImpot - (resultatAvantImpot * taxeIS.getTauxTaxeIS().getPourcentage()/100);
+            taxeIS.setResultatApresImpot(resultatApresImpot);
+            taxeIS.setMontantIs(resultatApresImpot);
             // obtenir la date d'échéance
             Date dateEcheance = taxeIS.getDateEcheance();
             // obtenir la date de paiement
@@ -93,9 +97,9 @@ public class IsItemService implements IsItemFacade {
                 taxeIS.setMontantIs(nouveauMontant);
             }
 
-            taxeIsService.save(taxeIS);
 
-            tauxTaxeIsService.save(tauxTaxeIS);
+            taxeIsService.save(taxeIS);
+            isItemDao.save(isItem);
 
             return 1;
 

@@ -16,5 +16,7 @@ public class NotificationISDetail {
 
     @ManyToOne
     private Societe societe;
+    @ManyToOne
+    private TaxeIS taxeIS;
 
 }

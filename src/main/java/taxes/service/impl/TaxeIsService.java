@@ -3,14 +3,13 @@ package taxes.service.impl;
 import taxes.bean.*;
 import taxes.dao.TaxeISDao;
 import taxes.service.facade.TaxeIsFacade;
-import taxes.utils.DateGenerator;
 import taxes.ws.dto.ResStatiqueISDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.temporal.ChronoUnit;
+import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -52,81 +51,39 @@ public class TaxeIsService implements TaxeIsFacade {
     }
 
     @Override
-    public int save(ISItem isItem, Societe societe) {
+    public int save(TaxeIS taxeIS, Societe societe) {
 
-        if (isItem.getFactureGagnes().isEmpty()) {
-            return -1;
+        if (taxeISDao.findByAnneeAndTrimestreAndSocieteIce(taxeIS.getAnnee(), taxeIS.getTrimestre(), societe.getIce()) != null) {
+            return -1; // taxeIS with same year and trimester already exists
         }
-        if (isItem.getTaxeIS().getSociete() == null || isItem.getTaxeIS().getSociete().getIce() == null || societeService.findByIce(isItem.getTaxeIS().getSociete().getIce()) == null) {
-            return -2;
-        } else if (taxeISDao.findByAnneeAndTrimestre(isItem.getTaxeIS().getAnnee(), isItem.getTaxeIS().getTrimestre() ) != null) {
-            return -3;
-        } else {
-            double totaleResultatApresImpot = 0;
-            double totaleResultatAvantImpot = 0;
-            double totalGain = 0;
-            double totalCharge = 0;
-            //Get Date range By Annee and Trimestre
-            Date[] dateRnage = DateGenerator.generateDateRnage(isItem.getTaxeIS().getAnnee(), isItem.getTaxeIS().getTrimestre());
-
-            //Get Facture Gagne and Facture Perte By Societe and Date Range
-            List<FactureGagne> factureGagnes = factureGagneService.findBySocieteIceAndDateFactureBetween(societe.getIce(), dateRnage[0], dateRnage[1]);
-            List<FacturePerte> facturePertes = facturePerteService.findBySocieteIceAndDateFactureBetween(societe.getIce(), dateRnage[0], dateRnage[1]);
-
-            //append Facture Gagne and Facture Perte to ISItem
-            isItem.getFactureGagnes().addAll(factureGagnes);
-            isItem.getFacturePertes().addAll(facturePertes);
-
-            for (FactureGagne factureGagne : isItem.getFactureGagnes()) {
-                totalGain+=factureGagne.getMontantHT();
-                factureGagne.setTaxeIS(isItem.getTaxeIS());
-                factureGagneService.save(factureGagne);
-            }
-            for (FacturePerte facturePerte : isItem.getFacturePertes()) {
-                totalCharge+=facturePerte.getMontantHT();
-                facturePerte.setTaxeIS(isItem.getTaxeIS());
-                facturePerteService.save(facturePerte);
-            }
-            isItem.getTaxeIS().setChiffreAffaire(totalGain);
-            isItem.getTaxeIS().setCharge(totalCharge);
-            // obtenir la date d'échéance
-            Date dateEcheance = isItem.getTaxeIS().getDateEcheance();
-            // obtenir la date de paiement
-            Date datePaiement = isItem.getTaxeIS().getDatePaiement();
-            // calculer le nombre de jours de retard
-            long nbMoisRetard = ChronoUnit.MONTHS.between(dateEcheance.toInstant(), datePaiement.toInstant());
-
-            if (nbMoisRetard == 1) {
-                double montantPenalite = isItem.getTaxeIS().getMontantIs() * 0.1;
-                double nouveauMontant = isItem.getTaxeIS().getMontantIs() + montantPenalite;
-                isItem.getTaxeIS().setMontantIs(nouveauMontant);
-            }
-            if (nbMoisRetard > 1) {
-                // calculer la pénalité
-                double montantPenalite = isItem.getTaxeIS().getMontantIs() * 0.1;
-                // calculer la majoration
-                double montantMajoration = isItem.getTaxeIS().getMontantIs() * (nbMoisRetard - 1) * 0.05;
-                // mettre à jour le montant total
-                double nouveauMontant = isItem.getTaxeIS().getMontantIs() + montantPenalite + montantMajoration;
-                isItem.getTaxeIS().setMontantIs(nouveauMontant);
-            }
-
-            isItem.getTaxeIS().setResultatAvantImpot(isItem.getTaxeIS().getChiffreAffaire() - isItem.getTaxeIS().getCharge());
-            TauxTaxeIS tauxTaxeIS = tauxTaxeIsService.tauxTaxeIsDao.findByResultatAvantImpot(isItem.getTaxeIS().getResultatAvantImpot());
-            isItem.getTaxeIS().setTauxTaxeIS(tauxTaxeIS);
-            isItem.getTaxeIS().setMontantIs(tauxTaxeIS.getPourcentage() * isItem.getTaxeIS().getResultatAvantImpot());
-            isItem.getTaxeIS().setResultatApresImpot(isItem.getTaxeIS().getResultatAvantImpot() - isItem.getTaxeIS().getMontantIs());
-            taxeISDao.save(isItem.getTaxeIS());
-
-            totaleResultatApresImpot += isItem.getTaxeIS().getResultatApresImpot();
-            totaleResultatAvantImpot += isItem.getTaxeIS().getResultatAvantImpot();
-            tauxTaxeIsService.save(tauxTaxeIS);
-
-            isItem.getTaxeIS().setResultatAvantImpot(totaleResultatAvantImpot);
-            isItem.getTaxeIS().setResultatApresImpot(totaleResultatApresImpot);
-            return 1;
-
+        if (societeService.findByIce(societe.getIce()) == null) {
+            return -2; // invalid societe
         }
+        taxeIS.setSociete(societe);
+        taxeISDao.save(taxeIS);
+        return 1; // success
+
+    }
+
+    @Override
+    public int saveTaxesISByTrimester(int annee, int trimester) {
+        List<Societe> societes = societeService.findAll();
+        LocalDate trimDate = LocalDate.of(annee, trimester * 3, 1).atStartOfDay().toLocalDate();
+        if(trimDate.isAfter(LocalDate.now())) {
+            return -1; // invalid trimester
+        }
+        for (Societe societe : societes) {
+            if(this.findByAnneeAndTrimestreAndSocieteIce(annee, trimester, societe.getIce()) != null) {
+                continue;
+            }
+            TaxeIS taxeIS = new TaxeIS();
+            taxeIS.setAnnee(annee);
+            taxeIS.setTrimestre(trimester);
+            taxeIS.setSociete(societe);
+            taxeIS.setDateEcheance(Timestamp.valueOf(trimDate.plusMonths(1).atStartOfDay()));
+            taxeISDao.save(taxeIS);
+        }
+        return 1;
 
     }
 
