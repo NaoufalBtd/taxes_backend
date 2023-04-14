@@ -9,6 +9,7 @@ import java.util.Date;
 public class FacturePerteDto {
 
     private Long id;
+    private String code;
 
     private double montantHT;
 

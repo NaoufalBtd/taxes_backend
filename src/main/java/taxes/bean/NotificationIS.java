@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 @Entity
@@ -21,6 +22,9 @@ public class NotificationIS {
     private int anneeMin;
     @ManyToOne
     private Societe societe;
+
+    @OneToMany(mappedBy = "notificationIS")
+    private List<NotificationISDetail> notificationISDetails;
 
 
 }

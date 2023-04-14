@@ -7,10 +7,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+import taxes.bean.User;
 import taxes.service.impl.AuthService;
 import taxes.ws.dto.AuthenticationRequestDto;
 import taxes.ws.dto.AuthenticationResponse;
@@ -49,4 +48,12 @@ public class AuthRest {
                 .body(AuthenticationResponse.builder().token(token).build());
     }
 
+    @GetMapping("/isLoggedIn")
+    public ResponseEntity isLoggedIn(@AuthenticationPrincipal User user) {
+        if(user == null) {
+            return ResponseEntity.badRequest().build();
+        } else {
+            return ResponseEntity.ok().build();
+        }
+    }
 }

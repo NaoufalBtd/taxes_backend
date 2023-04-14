@@ -11,6 +11,7 @@ public class FacturePerte {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String code;
 
     private double montantHT;

@@ -22,6 +22,8 @@ public interface EmployeFacade {
 
     public int deleteByCin(String cin) ;
 
+    int update(Employe employe);
+
     public int save(Employe employe) ;
     public List<Employe> findBySocieteIce(String ice);
     Employe  findBySalaire(double salaire );

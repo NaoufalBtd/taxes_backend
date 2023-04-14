@@ -12,6 +12,7 @@ public class FactureGagneConverter extends  AbstractConverter<FactureGagne ,Fact
             dto=new FactureGagneDto();
             dto.setId(item.getId());
             dto.setCode(item.getCode());
+            dto.setCode(item.getCode());
             dto.setMontantHT(item.getMontantHT());
             dto.setMontantTTC(item.getMontantTTC());
             dto.setTva(item.getTva());

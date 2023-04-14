@@ -34,23 +34,29 @@ public class FacturePerteService implements FacturePerteFacade {
         return facturePerteDao.findBySocieteIceAndDateFactureBetween(ice, startDate, endDate, pageRequest);
     }
 
+    @Override
+    public int delete(Long id) {
+         facturePerteDao.deleteById(id);
+         return 1;
+    }
+
     public int save(FacturePerte facturePerte) {
-        TaxeIS taxeIS = new TaxeIS();
-        if (taxeIS == null || taxeIS.getSociete() == null || facturePerte == null || facturePerte.getDateFacture() == null) {
+        if (facturePerte.getSociete() == null || facturePerte.getSociete().getIce() == null ) {
             return -1;
-        } else if (facturePerte.getMontantTTC() <= 0) {
-            return -2;
-        } else if (facturePerte.getMontantTTC() > taxeIS.getChiffreAffaire()) {
-            return -3;
         } else {
-            facturePerte.setTaxeIS(taxeIS);
+            double tva = facturePerte.getMontantHT() * 20 / 100;
+            facturePerte.setMontantTTC(facturePerte.getMontantHT() + tva);
             facturePerteDao.save(facturePerte);
-            double nouveauCharge = taxeIS.getCharge() + facturePerte.getMontantTTC();
-            taxeIS.setCharge(nouveauCharge);
-            taxeIS.setResultatAvantImpot(taxeIS.getChiffreAffaire() - taxeIS.getCharge());
-            taxeIS.setMontantIs(taxeIS.getTauxTaxeIS().getPourcentage() * taxeIS.getResultatAvantImpot());
-            taxeIS.setResultatApresImpot(taxeIS.getResultatAvantImpot() - taxeIS.getMontantIs());
-            taxeISDao.save(taxeIS);
+            
+            return 1;
+        }
+    }
+    @Override
+    public int update(FacturePerte facturePerte) {
+        if(facturePerte == null || facturePerte.getId() == null){
+            return -1;
+        }else{
+            facturePerteDao.save(facturePerte);
             return 1;
         }
     }

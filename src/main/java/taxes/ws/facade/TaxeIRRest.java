@@ -1,21 +1,25 @@
 package taxes.ws.facade;
 
 import jakarta.websocket.server.PathParam;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpEntity;
 import taxes.bean.Employe;
 import taxes.bean.Societe;
 import taxes.bean.TaxeIR;
+import taxes.bean.TaxeIREmployes;
+import taxes.service.facade.EmployeFacade;
 import taxes.service.facade.TaxeIRFacade;
+import taxes.service.utils.PdfUtil;
 import taxes.ws.converter.TaxeIRConverter;
 import taxes.ws.dto.ResStatDto;
 import taxes.ws.dto.TaxeIRDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.io.IOException;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RequestMapping("/api/v1/TaxeIR")
@@ -26,18 +30,53 @@ public class TaxeIRRest {
     private TaxeIRFacade taxeIRFacade;
 
     @Autowired
+    private EmployeFacade employeFacade;
+    @Autowired
     private TaxeIRConverter taxeIRConverter;
 
-//    @GetMapping("/societe/{societe}/dateDeclaration/{dateDeclaration}")
-//    public List<TaxeIRDto> findBySocieteAndDateDeclaration(@RequestBody Societe societe, @PathVariable Date dateDeclaration) {
-//        List<TaxeIR> taxeIRS = taxeIRFacade.findBySocieteAndDateDeclaration(societe, dateDeclaration);
-//        return taxeIRConverter.toDto(taxeIRS);
-//    }
+    @Value("${myPath}")
+    private String path;
 
     @GetMapping("/mois/{mois}/annee/{annee}/ice/{ice}")
     public TaxeIRDto findByMoisAndAnneeAndSocieteIce(@PathVariable int mois, @PathVariable int annee,@PathVariable String ice) {
         TaxeIR taxeIR = taxeIRFacade.findByMoisAndAnneeAndSocieteIce(mois, annee, ice);
         return taxeIRConverter.toDto(taxeIR);    }
+
+    @GetMapping("/genpdf/{fileName}/mois/{mois}/annee/{annee}/ice/{ice}")
+    HttpEntity<byte[]> createPdf(@PathVariable("fileName") String fileName, @PathVariable int mois, @PathVariable int  annee , @PathVariable String ice ) throws IOException {
+        TaxeIR taxeIR = taxeIRFacade.findByMoisAndAnneeAndSocieteIce(mois,annee,ice);
+
+        Map<String, String > data= new HashMap<>();
+        data.put("ice",taxeIR.getSociete().getIce());
+        Map<String,Integer > daja = new HashMap<>();
+        daja.put("mois",taxeIR.getMois());
+        daja.put("annee",taxeIR.getAnnee());
+
+        Map<String, Double > dada= new HashMap<>();
+        dada.put("salaireBrute",taxeIR.getSalaireBrute());
+        dada.put("salaireNet",taxeIR.getSalaireNet());
+        dada.put("montantIr",taxeIR.getMontantIR());
+
+        data.put("libelle",taxeIR.getSociete().getLibelle());
+
+        for (Employe t : employeFacade.findBySociete(ice)) {
+
+            data.put("nom",t.getNom());
+            data.put("prenom",t.getPrenom());
+            data.put("cin",t.getCin());
+
+            dada.put("s",t.getSalaire());
+            dada.put("r",t.getSalaire() * 0.3);
+
+        }
+
+
+
+        HttpEntity<byte[]> pdf = PdfUtil.createPdf("ice111.pdf",path,data,daja,dada);
+
+        return pdf;
+
+    }
 
     @GetMapping("/")
     public List<TaxeIRDto> findAll(@PathParam("page") Integer page, @PathParam("size") Integer size) {

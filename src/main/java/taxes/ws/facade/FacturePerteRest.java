@@ -14,6 +14,8 @@ import taxes.ws.dto.FacturePerteDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,11 +29,14 @@ public class FacturePerteRest {
     private FacturePerteConverter facturePerteConverter;
 
     @GetMapping("/")
-    public List<FacturePerteDto> findAll(@AuthenticationPrincipal User user, @RequestParam(name = "page", required = false, defaultValue = "0") Integer page, @RequestParam(name = "size", required = false, defaultValue = "4") Integer size, @RequestParam(name = "startDate", required = false) Date startDate, @RequestParam(name = "endDate", required = false) Date endDate) {
+    public List<FacturePerteDto> findAll(@AuthenticationPrincipal User user, @RequestParam(name = "page", required = false, defaultValue = "0") Integer page, @RequestParam(name = "size", required = false, defaultValue = "4") Integer size, @RequestParam(name = "startDate", required = false) String startDate, @RequestParam(name = "endDate", required = false) String endDate) throws ParseException {
         PageRequest pageRequest = PageRequest.of(page, size, Sort.by("dateFacture").descending());
         List<FacturePerte> facturePertes;
         if(startDate != null && endDate != null) {
-            facturePertes = facturePerteFacade.findBySocieteAndDate(user.getSociete().getIce(), startDate, endDate, pageRequest);
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            Date sDate = dateFormat.parse(startDate);
+            Date eDate = dateFormat.parse(endDate);
+            facturePertes = facturePerteFacade.findBySocieteAndDate(user.getSociete().getIce(), sDate, eDate, pageRequest);
         } else {
             facturePertes = facturePerteFacade.findBySociete(user.getSociete().getIce(), pageRequest);
         }
@@ -43,6 +48,18 @@ public class FacturePerteRest {
     public int save(@RequestBody FacturePerteDto facturePerteDto) {
         FacturePerte save = facturePerteConverter.toItem(facturePerteDto);
         return facturePerteFacade.save(save);
+    }
+
+    @PutMapping("/{id}")
+    public int update(@PathVariable Long id, @RequestBody FacturePerteDto facturePerteDto, @AuthenticationPrincipal User user) {
+        facturePerteDto.setSociete(user.getSociete());
+        FacturePerte save = facturePerteConverter.toItem(facturePerteDto);
+        return facturePerteFacade.update(save);
+    }
+
+    @DeleteMapping("/{id}")
+    public int delete(@PathVariable Long id) {
+        return facturePerteFacade.delete(id);
     }
 
     @GetMapping("/statistics")

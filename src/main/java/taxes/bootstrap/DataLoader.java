@@ -8,6 +8,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 import taxes.service.impl.TaxeIRService;
+import taxes.service.impl.TaxeIsService;
 import taxes.service.impl.UserService;
 
 import java.sql.Timestamp;
@@ -39,6 +40,10 @@ public class DataLoader implements CommandLineRunner {
     @Autowired
     private FacturePerteDao facturePerteDao;
 
+    @Autowired
+    private TaxeIsService taxeIsService;
+@Autowired
+    private TauxTaxeIsDao tauxTaxeIsDao;
 
 
     @PostConstruct
@@ -249,8 +254,33 @@ public class DataLoader implements CommandLineRunner {
         tauxTaxeIr4.setDateApplicationDebut(Timestamp.valueOf(LocalDate.parse("2019-01-01").atStartOfDay()));
         tauxTaxeIr4.setDateApplicationFin(Timestamp.valueOf(LocalDate.parse("2030-12-31").atStartOfDay()));
         tauxTaxeIr4.setSalaireMin(10000.01);
-        tauxTaxeIr4.setSalaireMax(100000000.00);
+        tauxTaxeIr4.setSalaireMax(1000000000.00);
         tauxTaxeIRDao.save(tauxTaxeIr4);
+
+        //Save taux taxe IS
+        TauxTaxeIS tauxTaxeIS1 = new TauxTaxeIS();
+        tauxTaxeIS1.setPourcentage(0);
+        tauxTaxeIS1.setDateApplicationDebut(Timestamp.valueOf(LocalDate.parse("2019-01-01").atStartOfDay()));
+        tauxTaxeIS1.setDateApplicationFin(Timestamp.valueOf(LocalDate.parse("2030-12-31").atStartOfDay()));
+        tauxTaxeIS1.setResultatMin(0);
+        tauxTaxeIS1.setResultMax(5000);
+        tauxTaxeIsDao.save(tauxTaxeIS1);
+
+        TauxTaxeIS tauxTaxeIS2 = new TauxTaxeIS();
+        tauxTaxeIS2.setPourcentage(10);
+        tauxTaxeIS2.setDateApplicationDebut(Timestamp.valueOf(LocalDate.parse("2019-01-01").atStartOfDay()));
+        tauxTaxeIS2.setDateApplicationFin(Timestamp.valueOf(LocalDate.parse("2030-12-31").atStartOfDay()));
+        tauxTaxeIS2.setResultatMin(5000.01);
+        tauxTaxeIS2.setResultMax(10000);
+        tauxTaxeIsDao.save(tauxTaxeIS2);
+
+        TauxTaxeIS tauxTaxeIS3 = new TauxTaxeIS();
+        tauxTaxeIS3.setPourcentage(20);
+        tauxTaxeIS3.setDateApplicationDebut(Timestamp.valueOf(LocalDate.parse("2019-01-01").atStartOfDay()));
+        tauxTaxeIS3.setDateApplicationFin(Timestamp.valueOf(LocalDate.parse("2030-12-31").atStartOfDay()));
+        tauxTaxeIS3.setResultatMin(10000.01);
+        tauxTaxeIS3.setResultMax(9000000000000.00);
+        tauxTaxeIsDao.save(tauxTaxeIS3);
 
         //save taxeIr for year 2022 and all months
         String[] years = {"2020","2021", "2022"};
@@ -267,8 +297,9 @@ public class DataLoader implements CommandLineRunner {
         //        Save Income invoices
         for (int i = 0; i < 40; i++) {
             FactureGagne facture = new FactureGagne();
-            facture.setCode("INV-" + String.format("%03d", i+1));
-            facture.setMontantHT(1000.00 * (i+1));
+            facture.setCode("INV_I-" + String.format("%03d", i+1));
+            double montantHT = 6333 * Math.random() + 3000;
+            facture.setMontantHT(montantHT);
             facture.setTva(20.0);
             facture.setMontantTTC(facture.getMontantHT() * (1 + facture.getTva() / 100));
             facture.setDateFacture(new Date(new Date().getTime() - TimeUnit.DAYS.toMillis((i+1) * 30)));
@@ -277,14 +308,20 @@ public class DataLoader implements CommandLineRunner {
         }
         for (int i = 0; i < 40; i++) {
             FacturePerte facture = new FacturePerte();
-            facture.setCode("INV-" + String.format("%03d", i+1));
-            facture.setMontantHT(1000.00 * (i+1));
+            facture.setCode("INV_E-" + String.format("%03d", i+1));
+            double montantHT = 5250 * Math.random() + 3000;
+            facture.setMontantHT(montantHT);
             facture.setTva(20.0);
             facture.setMontantTTC(facture.getMontantHT() * (1 + facture.getTva() / 100));
             facture.setDateFacture(new Date(new Date().getTime() - TimeUnit.DAYS.toMillis((i+1) * 30)));
             facture.setSociete(societe);
             facturePerteDao.save(facture);
         }
+
+        // declare taxeIs
+        taxeIsService.saveTaxesISByTrimester(2022, 3);
+        taxeIsService.saveTaxesISByTrimester(2022, 4);
+        taxeIsService.saveTaxesISByTrimester(2023, 1);
     }
 
 

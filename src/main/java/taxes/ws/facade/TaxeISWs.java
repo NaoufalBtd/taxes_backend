@@ -1,6 +1,7 @@
 package taxes.ws.facade;
 
 
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import taxes.bean.*;
 import taxes.service.facade.IsItemFacade;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/TaxeIS")
@@ -39,10 +41,17 @@ public class TaxeISWs {
         TaxeIS byAnneeAndTrimestre = taxeIsFacade.findByAnneeAndTrimestre(annee, trimestre );
         return taxeISConverter.toDto(byAnneeAndTrimestre);
     }
-    @GetMapping("/ice/{ice}")
-    public List<TaxeISDto> findBySocieteIce(@PathVariable String ice) {
-        List<TaxeIS> findBySocieteIce = taxeIsFacade.findBySocieteIce(ice );
-        return taxeISConverter.toDto(findBySocieteIce);
+    @GetMapping("/undeclared")
+    public List<TaxeISDto> findUndeclared(@AuthenticationPrincipal User user) {
+        List<TaxeIS> undeclared = taxeIsFacade.findUndeclaredTaxes(user.getSociete().getIce());
+        return undeclared.stream().map(taxeISConverter::toDto).collect(Collectors.toList());
+    }
+
+    @GetMapping("/")
+    public List<TaxeISDto> findBySocieteIce(@AuthenticationPrincipal User user, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "5") int size) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+        List<TaxeIS> taxes = taxeIsFacade.findBySocieteIce(user.getSociete().getIce(), pageRequest);
+        return taxes.stream().map(taxeISConverter::toDto).collect(Collectors.toList());
     }
 
     @DeleteMapping("/trimestre/{trimestre}/annee/{annee}/ice/{ice}")
@@ -58,9 +67,9 @@ public class TaxeISWs {
         return taxeIsFacade.deleteByAnneeAndTrimestre(trimestre, annee);
     }
     @PostMapping("/")
-    public int save(@RequestBody ISItemDto iSItemDto, @AuthenticationPrincipal User user) {
-        ISItem sav = isItemConverter.toItem(iSItemDto);
-        return isItemFacade.save(sav, user.getSociete());
+    public int save(@RequestBody TaxeISDto taxeISDto, @AuthenticationPrincipal User user) {
+        TaxeIS tax = taxeISConverter.toItem(taxeISDto);
+        return taxeIsFacade.declareTax( tax, user.getSociete());
     }
     @PutMapping("/")
     public int updateTaxeIS(@RequestBody TaxeISDto taxeISDto) {
@@ -70,7 +79,7 @@ public class TaxeISWs {
 
     @PostMapping("/add")
     public int saveTaxesISByTrimester(@RequestBody TaxeISDto taxeISDto) {
-        return taxeIsFacade.saveTaxesISByTrimester(taxeISDto.getTrimestre(), taxeISDto.getAnnee());
+        return taxeIsFacade.saveTaxesISByTrimester( taxeISDto.getAnnee(), taxeISDto.getTrimestre());
     }
 
 

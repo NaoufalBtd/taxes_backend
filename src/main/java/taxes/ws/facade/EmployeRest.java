@@ -78,5 +78,11 @@ public class EmployeRest {
         Employe emp = employeConverter.toItem(employe);
         return employeFacade.save(emp);
     }
+
+    @PutMapping("/")
+    public int update(@RequestBody EmployeDto employe) {
+        Employe emp = employeConverter.toItem(employe);
+        return employeFacade.update(emp);
+    }
 }
 

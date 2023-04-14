@@ -13,8 +13,12 @@ public interface FacturePerteFacade {
 
     List<FacturePerte> findBySocieteAndDate(String ice, Date startDate, Date endDate, PageRequest pageRequest);
 
+    int delete(Long id);
+
     public int save(FacturePerte facturePerte);
 
+
+    int update(FacturePerte facturePerte);
 
     List<Object[]> getIncomeInvoicesSumByMonth(String ice, long month);
 }

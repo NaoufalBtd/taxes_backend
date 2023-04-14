@@ -11,7 +11,7 @@ public class ISItem {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    @ManyToOne
+    @OneToOne
     TaxeIS taxeIS;
     @OneToMany
     List<FactureGagne>  factureGagnes ;

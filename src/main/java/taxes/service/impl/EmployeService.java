@@ -45,6 +45,16 @@ public class EmployeService implements EmployeFacade {
         return employeDao.deleteByCin(cin);
     }
 
+    @Override
+    public int update(Employe employe) {
+        if (employeDao.findById(employe.getId()).isPresent()) {
+            employeDao.save(employe);
+            return 1;
+        } else {
+            return -1;
+        }
+    }
+
     public int save(Employe employe) {
         if (findByCin(employe.getCin()) != null) {
             return -1;

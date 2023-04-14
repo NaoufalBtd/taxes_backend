@@ -34,7 +34,7 @@ public List<FactureGagne> findBySocieteIceAndDateFactureBetween(String ice, Date
         if (factureGagne.getSociete() == null || factureGagne.getSociete().getIce() == null || societeService.findByIce(factureGagne.getSociete().getIce()) == null) {
             return -1;
         } else {
-            double tva = factureGagne.getMontantHT() * factureGagne.getTva() / 100;
+            double tva = factureGagne.getMontantHT() * 20 / 100;
             factureGagne.setMontantTTC(factureGagne.getMontantHT() + tva);
             factureGagneDao.save(factureGagne);
 
@@ -67,6 +67,21 @@ public List<FactureGagne> findBySocieteIceAndDateFactureBetween(String ice, Date
         return factureGagneDao.getSumTTCByMonth(sixMonthsAgo, ice);
     }
 
+    @Override
+    public int update(FactureGagne factureGagne) {
+        if (factureGagne.getSociete() == null || factureGagne.getSociete().getIce() == null || societeService.findByIce(factureGagne.getSociete().getIce()) == null) {
+            return -1;
+        } else {
+            factureGagneDao.save(factureGagne);
+            return 1;
+        }
+    }
+
+    @Override
+    public int delete(Long id) {
+        factureGagneDao.deleteById(id);
+        return 1;
+    }
 
 
 }

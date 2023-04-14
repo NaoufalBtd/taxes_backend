@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import taxes.bean.NotificationISDetail;
+import taxes.bean.Societe;
 
 import java.util.List;
 
@@ -17,7 +18,11 @@ public interface NotificationISDetailDao extends JpaRepository<NotificationISDet
 
 
 
-    @Query("SELECT nd FROM NotificationISDetail nd WHERE NOT EXISTS "
-            + "(SELECT t.notificationISDetail FROM TaxeIS t WHERE t.annee = :year AND t.trimestre = :trimester AND nd.societe = t.societe) AND nd.societe.ice = :ice")
-    List<NotificationISDetail> findNotificationISDetailsWithoutTaxeIsBySocieteIce(@Param("year") int year, @Param("trimester") int trimester, @Param("ice") String ice);
+//    @Query("SELECT nd FROM NotificationISDetail nd WHERE NOT EXISTS "
+//            + "(SELECT t.notificationISDetail FROM TaxeIS t WHERE t.annee = :year AND t.trimestre = :trimester AND nd.societe = t.societe) AND nd.societe.ice = :ice")
+//    List<NotificationISDetail> findNotificationISDetailsWithoutTaxeIsBySocieteIce(@Param("year") int year, @Param("trimester") int trimester, @Param("ice") String ice);
+
+    //find notificationDetail for TaxeIS without IsItem
+    @Query("SELECT nd FROM NotificationISDetail nd WHERE nd.taxeIS.declared = false")
+    List<NotificationISDetail> findActiveNotificationBySociete(Societe societe);
 }

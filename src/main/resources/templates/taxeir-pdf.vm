@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h1> TaxeIR de $mois /$annee de la societe $ice has $libelle </h1>:
+<h1> noufaal matb9ach dlmniiiiiii glt lik khdaam  </h1>:
+<p>Total des salaireNet : $salaireNet DH</p>
+<p>Total des salaireBrute : $salaireBrute DH</p>
+<p>Total des montantIr : $montantIr DH</p>
+<p>les employes concerne :</p>
+<p>Nom :$nom</p>
+<p>prenom :$prenom</p>
+<p> Le salaireNet : $s DH</p>
+<p> Le salaireBrute : $t DH</p>
+<p>Le montantIR : $r DH</p>
+<p> Cin : $cin </p>
+<br/>
+This file is generated on : $genDateTime
+</body>
+</html>

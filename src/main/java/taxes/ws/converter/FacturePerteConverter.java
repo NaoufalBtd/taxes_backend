@@ -14,6 +14,7 @@ public class FacturePerteConverter extends  AbstractConverter<FacturePerte,Factu
         if (item != null) {
             dto = new FacturePerteDto();
             dto.setId(item.getId());
+            dto.setCode(item.getCode());
             dto.setMontantHT(item.getMontantHT());
             dto.setMontantHC(item.getMontantHC());
             dto.setMontantTTC(item.getMontantTTC());

@@ -21,11 +21,10 @@ public class ISItemConverter {
         ISItem item= null;
         if (dto != null) {
             item= new ISItem();
-            item.setTaxeIS(item.getTaxeIS());
-            item.setFacturePertes(item.getFacturePertes());
-            item.setFactureGagnes(item.getFactureGagnes());
+            item.setTaxeIS(dto.getTaxeIS());
+            item.setFacturePertes(dto.getFacturePertes());
+            item.setFactureGagnes(dto.getFactureGagnes());
         }
-
         return item;
     }
 }

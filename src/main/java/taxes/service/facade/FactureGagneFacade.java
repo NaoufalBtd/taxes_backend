@@ -24,4 +24,8 @@ public interface FactureGagneFacade {
     List<FactureGagne> findBySocieteAndDate(String ice, Date startDate, Date endDate, PageRequest pageRequest);
 
     List<Object[]> getIncomeInvoicesSumByMonth(String ice, long month);
+
+    int update(FactureGagne factureGagne);
+
+    int delete(Long id);
 }
